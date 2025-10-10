@@ -6,6 +6,7 @@ export default function App() {
     <View style={styles.container}>
       <Text>Welcome to Evo</Text>
       <Text> Ya bitch</Text>
+      <Text>Just a test to see how git works</Text>
       <StatusBar style="auto" />
     </View>
   );
