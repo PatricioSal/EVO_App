@@ -1,0 +1,16 @@
+To get the updated code from master
+    git checkout master
+    git pull orgin master
+    git checkout <yourBranch>
+    git merge master
+
+To send new code to main from your branch
+    git add .
+    git commit -m "message here"
+    git push orgin <yourBranch>
+Then it will send it to Github where you can do your pullrequest
+
+For the Emulator
+    npx expo start
+    a
+    Cntl+c to get out of that mode
