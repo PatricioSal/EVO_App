@@ -1,7 +1,10 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 export default function HomeScreen() {
+  const navigation = useNavigation();
+
   return (
     <View style={styles.container}>
       {/* Top Bar */}
@@ -13,10 +16,12 @@ export default function HomeScreen() {
 
       {/* Welcome Message */}
       <Text style={styles.welcome}>Welcome back John Doe</Text>
+
         {/* Box for challenge */}
       <View style={styles.bigbox}>
             <Text style={styles.boxText}>Begin your Daily Challenge</Text>
-            <TouchableOpacity style={styles.Button}>
+            <TouchableOpacity style={styles.Button} 
+            onPress={() => navigation.navigate('Challenge')}>
                 <Text style={styles.buttonText}>Accept</Text>
             </TouchableOpacity>
       </View>
