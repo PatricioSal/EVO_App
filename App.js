@@ -2,10 +2,13 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 
 import HomeScreen from './HomeScreen';
+import Challenge from './Challenge';
 
 const Tab = createBottomTabNavigator();
+const Stack = createStackNavigator()
 
 export default function App() {
   return (
@@ -22,14 +25,23 @@ export default function App() {
         }}
         
       >
-        <Tab.Screen name ="Home" component={HomeScreen} />
+        <Tab.Screen name ="Home" component={HomeStack} />
         <Tab.Screen name ="Settings" component={SettnigScreen} />
+
       </Tab.Navigator>
+      
     </NavigationContainer>
   );
 }
 
-
+function HomeStack(){
+  return (
+    <Stack.Navigator screenOptions={{headerShown:  false}}>
+      <Stack.Screen name="HomeScreen" component={HomeScreen}/>
+      <Stack.Screen name="Challenge" component={Challenge}/>
+    </Stack.Navigator>
+  )
+}
 
 function SettnigScreen(){
   return (
