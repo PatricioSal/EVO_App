@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function ChangePasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -8,7 +9,6 @@ export default function ChangePasswordScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const handleVerify = () => {
-    // Simulated verification (you'd normally check this on your backend)
     if (email === 'test@example.com' && securityAnswer.toLowerCase() === 'drums') {
       Alert.alert('Verification Successful', 'You may now set a new password.');
     } else {
@@ -25,20 +25,23 @@ export default function ChangePasswordScreen({ navigation }) {
       Alert.alert('Error', 'Password should be at least 4 characters.');
       return;
     }
-
-    // Simulate password update success
     Alert.alert('Success', 'Your password has been changed successfully.');
-    navigation.navigate('Login'); // Go back to Login
+    navigation.navigate('Login');
   };
 
   return (
-    <View style={styles.container}>
+    <LinearGradient
+      colors={['#15262B', '#1E2B2F', '#0F1A1C']} // Dark teal → dark green
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.container}
+    >
       <Text style={styles.title}>Change Password</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Enter your email"
-        placeholderTextColor="#999"
+        placeholderTextColor="#000"
         value={email}
         onChangeText={setEmail}
       />
@@ -46,7 +49,7 @@ export default function ChangePasswordScreen({ navigation }) {
       <TextInput
         style={styles.input}
         placeholder="What’s your favorite instrument?"
-        placeholderTextColor="#999"
+        placeholderTextColor="#000"
         value={securityAnswer}
         onChangeText={setSecurityAnswer}
       />
@@ -58,7 +61,7 @@ export default function ChangePasswordScreen({ navigation }) {
       <TextInput
         style={styles.input}
         placeholder="New password"
-        placeholderTextColor="#999"
+        placeholderTextColor="#000"
         secureTextEntry
         value={newPassword}
         onChangeText={setNewPassword}
@@ -67,7 +70,7 @@ export default function ChangePasswordScreen({ navigation }) {
       <TextInput
         style={styles.input}
         placeholder="Confirm new password"
-        placeholderTextColor="#999"
+        placeholderTextColor="#000"
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
@@ -80,42 +83,43 @@ export default function ChangePasswordScreen({ navigation }) {
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
         <Text style={styles.backText}>Back to Login</Text>
       </TouchableOpacity>
-    </View>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#23353A',
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
-    color: '#fff',
+    color: '#C8E6C9',
     fontSize: 26,
     marginBottom: 25,
   },
   input: {
     width: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    backgroundColor: '#30503B', // dark green input
+    borderColor: '#A9ECA2',
+    borderWidth: 2,
+    borderRadius: 10,
     padding: 12,
-    marginBottom: 12,
     color: '#000',
+    marginBottom: 12,
   },
   verifyButton: {
-    backgroundColor: '#40C032',
-    borderRadius: 8,
+    backgroundColor: '#3E662F',
+    borderRadius: 10,
     paddingVertical: 12,
     width: '100%',
     alignItems: 'center',
     marginBottom: 20,
   },
   saveButton: {
-    backgroundColor: '#0072FF',
-    borderRadius: 8,
+    backgroundColor: '#3E662F',
+    borderRadius: 10,
     paddingVertical: 12,
     width: '100%',
     alignItems: 'center',
@@ -127,7 +131,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   backText: {
-    color: '#40C032',
+    color: '#A9ECA2',
     fontSize: 14,
     marginTop: 15,
   },

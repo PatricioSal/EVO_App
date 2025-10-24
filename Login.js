@@ -1,158 +1,136 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Animations
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(-30)).current;
-
-  useEffect(() => {
-    // Fade in + slide down logo + form
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 1000,
-        useNativeDriver: true,
-      }),
-      Animated.spring(slideAnim, {
-        toValue: 0,
-        friction: 5,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
-
-  const handleLogin = () => {
-    if (email === 'test@example.com' && password === '1234') {
-      alert('Login Successful!');
-      navigation.replace('MainTabs');
-    } else {
-      alert('Invalid email or password');
-    }
-  };
-
   return (
-    <View style={styles.container}>
-      {/* Animated Logo */}
-      <Animated.View style={[styles.logoContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
-        <Image
-          source={require('./assets/EvoImg2.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </Animated.View>
+    <LinearGradient
+      colors={['#15262B', '#1E2B2F', '#0F1A1C']} // gradient colors (dark teal to dark green)
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+      style={styles.container}
+    >
+      {/* Logo */}
+      <View style={styles.logoContainer}>
+        <Image source={require('./assets/EvoImg-Photoroom.png')} style={styles.logo} />
+        {/*<Text style={styles.logoText}>EVO</Text>*/}
+      </View>
 
-      {/* Animated Form */}
-      <Animated.View style={[styles.formContainer, { opacity: fadeAnim }]}>
-        <Text style={styles.title}>Welcome Back</Text>
-        <Text style={styles.subtitle}>Login to continue</Text>
+      {/* Welcome Text */}
+      <Text style={styles.welcomeText}>Welcome!</Text>
 
-        <TextInput
-          style={styles.input}
-          placeholder="Email"
-          placeholderTextColor="#999"
-          value={email}
-          onChangeText={setEmail}
-        />
+      {/* Email Input */}
+      <TextInput
+        style={styles.input}
+        placeholder="Email Address"
+        placeholderTextColor="#000"
+        value={email}
+        onChangeText={setEmail}
+      />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Password"
-          placeholderTextColor="#999"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
+      {/* Password Input */}
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        placeholderTextColor="#000"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
 
-        {/* Forgot Password - right under password box */}
-        <TouchableOpacity onPress={() => navigation.navigate('ChangePassword')} style={styles.forgotContainer}>
-          <Text style={styles.forgotText}>Forgot password?</Text>
-        </TouchableOpacity>
-
-        {/* Login Button */}
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginText}>Login</Text>
-        </TouchableOpacity>
-      </Animated.View>
-
-      {/* Sign-up text moved to the bottom */}
-      <TouchableOpacity onPress={() => alert('Sign up flow coming soon!')} style={styles.bottomTextContainer}>
-        <Text style={styles.signupText}>Don’t have an account? Sign up</Text>
+      {/* Forgot Password */}
+      <TouchableOpacity onPress={() => navigation.navigate('ChangePassword')}>
+        <Text style={styles.forgotText}>Forgot Password?</Text>
       </TouchableOpacity>
-    </View>
+
+      {/* Login Button */}
+      <TouchableOpacity
+        style={styles.loginButton}
+        onPress={() => navigation.navigate('MainTabs')}
+      >
+        <Text style={styles.loginText}>Login</Text>
+      </TouchableOpacity>
+
+      {/* Bottom Text */}
+      <View style={styles.bottomContainer}>
+        <Text style={styles.bottomText}>Don’t have an account? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Challenge')}>
+          <Text style={styles.signUpText}>Sign Up Now</Text>
+        </TouchableOpacity>
+      </View>
+    </LinearGradient>
   );
 }
 
+// STYLES
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#23353A',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 60,
+    justifyContent: 'center',
+    padding: 20,
   },
   logoContainer: {
-    alignItems: 'center',
-    marginTop: 40,
+  position: 'absolute',
+  top: 100, // adjust as needed
+  alignItems: 'center',
+  width: '100%',
   },
   logo: {
-    width: 200,
-    height: 200,
-    borderRadius: 25,
+    width: 250, // smaller so it doesn't dominate
+    height: 250,
   },
-  formContainer: {
-    width: '85%',
-    alignItems: 'center',
-  },
-  title: {
-    color: '#fff',
-    fontSize: 28,
+  logoText: {
+    fontSize: 36,
+    color: '#40C032',
     fontWeight: 'bold',
-    marginBottom: 10,
   },
-  subtitle: {
-    color: '#aaa',
-    fontSize: 16,
+  welcomeText: {
+    color: '#C8E6C9',
+    fontSize: 26,
     marginBottom: 30,
   },
   input: {
     width: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: '#30503B',
+    borderColor: '#A9ECA2',
+    borderWidth: 2,
     borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
+    padding: 12,
     color: '#000',
-  },
-  forgotContainer: {
-    width: '100%',
-    alignItems: 'flex-end',
-    marginBottom: 20,
+    marginVertical: 8,
   },
   forgotText: {
-    color: '#40C032',
-    fontSize: 14,
+    alignSelf: 'flex-end',
+    color: '#A9ECA2',
+    marginBottom: 20,
   },
   loginButton: {
-    backgroundColor: '#40C032',
-    borderRadius: 10,
-    paddingVertical: 15,
     width: '100%',
+    backgroundColor: '#3E662F',
+    padding: 15,
+    borderRadius: 15,
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 30,
   },
   loginText: {
     color: '#000',
-    fontSize: 18,
     fontWeight: 'bold',
+    fontSize: 18,
   },
-  bottomTextContainer: {
-    marginBottom: 20,
+  bottomContainer: {
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 40,
   },
-  signupText: {
-    color: '#40C032',
-    fontSize: 14,
+  bottomText: {
+    color: '#fff',
+  },
+  signUpText: {
+    color: '#A9ECA2',
+    fontWeight: '500',
   },
 });
