@@ -1,15 +1,34 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Animated } from 'react-native';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Animations
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(-30)).current;
+
+  useEffect(() => {
+    // Fade in + slide down logo + form
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }),
+      Animated.spring(slideAnim, {
+        toValue: 0,
+        friction: 5,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
   const handleLogin = () => {
-    // Simple mock login validation (you can connect to a backend later)
     if (email === 'test@example.com' && password === '1234') {
       alert('Login Successful!');
-      navigation.replace('MainTabs'); // Go to your tab screens
+      navigation.replace('MainTabs');
     } else {
       alert('Invalid email or password');
     }
@@ -17,31 +36,50 @@ export default function LoginScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
-      <Text style={styles.subtitle}>Login to continue</Text>
+      {/* Animated Logo */}
+      <Animated.View style={[styles.logoContainer, { opacity: fadeAnim, transform: [{ translateY: slideAnim }] }]}>
+        <Image
+          source={require('./assets/EvoImg2.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </Animated.View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#999"
-        value={email}
-        onChangeText={setEmail}
-      />
+      {/* Animated Form */}
+      <Animated.View style={[styles.formContainer, { opacity: fadeAnim }]}>
+        <Text style={styles.title}>Welcome Back</Text>
+        <Text style={styles.subtitle}>Login to continue</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#999"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          placeholderTextColor="#999"
+          value={email}
+          onChangeText={setEmail}
+        />
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginText}>Login</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Password"
+          placeholderTextColor="#999"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
-      <TouchableOpacity onPress={() => alert('Sign up flow coming soon!')}>
+        {/* Forgot Password - right under password box */}
+        <TouchableOpacity onPress={() => navigation.navigate('ChangePassword')} style={styles.forgotContainer}>
+          <Text style={styles.forgotText}>Forgot password?</Text>
+        </TouchableOpacity>
+
+        {/* Login Button */}
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginText}>Login</Text>
+        </TouchableOpacity>
+      </Animated.View>
+
+      {/* Sign-up text moved to the bottom */}
+      <TouchableOpacity onPress={() => alert('Sign up flow coming soon!')} style={styles.bottomTextContainer}>
         <Text style={styles.signupText}>Don’t have an account? Sign up</Text>
       </TouchableOpacity>
     </View>
@@ -53,8 +91,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#23353A',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 30,
+    justifyContent: 'space-between',
+    paddingVertical: 60,
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginTop: 40,
+  },
+  logo: {
+    width: 200,
+    height: 200,
+    borderRadius: 25,
+  },
+  formContainer: {
+    width: '85%',
+    alignItems: 'center',
   },
   title: {
     color: '#fff',
@@ -72,8 +123,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 15,
-    marginBottom: 15,
+    marginBottom: 10,
     color: '#000',
+  },
+  forgotContainer: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginBottom: 20,
+  },
+  forgotText: {
+    color: '#40C032',
+    fontSize: 14,
   },
   loginButton: {
     backgroundColor: '#40C032',
@@ -88,9 +148,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+  bottomTextContainer: {
+    marginBottom: 20,
+  },
   signupText: {
     color: '#40C032',
     fontSize: 14,
-    marginTop: 10,
   },
 });

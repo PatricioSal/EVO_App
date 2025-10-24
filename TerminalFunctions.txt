@@ -14,3 +14,7 @@ For the Emulator
     npx expo start
     a
     Cntl+c to get out of that mode
+
+Login information
+Email - test@example.com
+Password - 1234
