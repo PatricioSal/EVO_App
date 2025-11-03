@@ -18,3 +18,5 @@ For the Emulator
 Login information
 Email - test@example.com
 Password - 1234
+
+API token: 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
