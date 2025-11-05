@@ -7,6 +7,9 @@ import HomeScreen from './HomeScreen';
 import LoginScreen from './Login'; // your login page
 import ChangePasswordScreen from './ChangePassword';
 import ChallengeScreen from './Challenge'; // ✅ added import
+import CameraScreen from './CameraScreen';
+import PostPreview from './PostPreview';
+import VideoFeed from './Video';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -19,6 +22,8 @@ export default function App() {
         <Stack.Screen name="MainTabs" component={MainTabs} />
         <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
         <Stack.Screen name="Challenge" component={ChallengeScreen} />
+        <Stack.Screen name="CameraScreen" component={CameraScreen} />
+        <Stack.Screen name="PostPreview" component={PostPreview} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -40,6 +45,7 @@ function MainTabs() {
       }}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Video" component={VideoFeed} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
     </Tab.Navigator>
   );
