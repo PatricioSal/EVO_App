@@ -85,10 +85,8 @@ export default function Challenge() {
     };
 
     const handleBeginRecording = () => {
-        // This will handle video recording later
-        alert('Recording functionality coming soon!');
-        // Go back to HomeScreen
-        navigation.goBack();
+        // Navigate to CameraScreen to start recording
+        navigation.navigate('CameraScreen');
     };
 
     // Challenge Screen (shown after AI generates response)
