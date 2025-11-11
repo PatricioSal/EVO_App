@@ -1,10 +1,123 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+    // Validate that email and password are not empty
+    if (!email.trim() || !password.trim()) {
+      Alert.alert('Error', 'Please enter both email and password');
+      return;
+    }
+
+    // Check for admin credentials (hardcoded)
+    const ADMIN_EMAIL = 'admin@evo.app';
+    const ADMIN_PASSWORD = 'admin123';
+    
+    if (email.trim().toLowerCase() === ADMIN_EMAIL.toLowerCase() && password === ADMIN_PASSWORD) {
+      // Admin login - bypass 2FA and go directly to admin panel
+      Alert.alert('Success', 'Admin login successful!');
+      navigation.navigate('AdminTabs');
+      return;
+    }
+
+    try {
+      // Read the users.txt file from document directory (runtime storage)
+      const fileUri = `${FileSystem.documentDirectory}users.txt`;
+      
+      // Check if file exists, if not initialize from project file or default
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      let fileContent = '';
+      
+      if (fileInfo.exists) {
+        fileContent = await FileSystem.readAsStringAsync(fileUri);
+      } else {
+        // Initialize with default user from project users.txt
+        // Note: In production, you might want to copy from bundled asset
+        fileContent = 'test@example.com:1234\n';
+        await FileSystem.writeAsStringAsync(fileUri, fileContent);
+      }
+      const lines = fileContent.trim().split('\n').filter(line => {
+        const trimmed = line.trim();
+        return trimmed && !trimmed.startsWith('#'); // Skip empty lines and comments
+      });
+
+      // Check if credentials match
+      let matchedEmail = '';
+      const credentialsMatch = lines.some(line => {
+        const [storedEmail, storedPassword] = line.split(':');
+        if (storedEmail.trim() === email.trim() && storedPassword.trim() === password.trim()) {
+          matchedEmail = storedEmail.trim();
+          return true;
+        }
+        return false;
+      });
+
+      if (credentialsMatch) {
+        // Generate 6-digit verification code
+        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        try {
+          // Send verification code via email
+          const response = await fetch('http://localhost:3001/send-2fa-code', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: matchedEmail,
+              code: verificationCode,
+            }),
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            // Navigate to 2FA screen
+            navigation.navigate('TwoFactorAuth', {
+              email: matchedEmail,
+              verificationCode: verificationCode,
+            });
+          } else {
+            // If server fails, still allow login (for development)
+            console.warn('Failed to send 2FA code, allowing login anyway');
+            Alert.alert('Success', 'Login successful!');
+            navigation.navigate('MainTabs');
+          }
+        } catch (error) {
+          // If server not running, generate code and show it (for development)
+          console.error('2FA server error:', error);
+          console.log(`\n═══════════════════════════════════════════`);
+          console.log(`2FA Code for ${matchedEmail}: ${verificationCode}`);
+          console.log(`═══════════════════════════════════════════\n`);
+          
+          Alert.alert(
+            '2FA Code', 
+            `Verification code: ${verificationCode}\n\n(Server not running - using console for development)`,
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  navigation.navigate('TwoFactorAuth', {
+                    email: matchedEmail,
+                    verificationCode: verificationCode,
+                  });
+                }
+              }
+            ]
+          );
+        }
+      } else {
+        Alert.alert('Error', 'Invalid email or password');
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      Alert.alert('Error', 'Failed to read user data. Please try again.');
+    }
+  };
 
   return (
     <LinearGradient
@@ -41,15 +154,18 @@ export default function LoginScreen({ navigation }) {
         onChangeText={setPassword}
       />
 
-      {/* Forgot Password */}
-      <TouchableOpacity onPress={() => navigation.navigate('ChangePassword')}>
+      {/* Forgot Password — moved under password input, aligned right */}
+      <TouchableOpacity
+        style={styles.forgotContainer}
+        onPress={() => navigation.navigate('ChangePassword')}
+      >
         <Text style={styles.forgotText}>Forgot Password?</Text>
       </TouchableOpacity>
 
       {/* Login Button */}
       <TouchableOpacity
         style={styles.loginButton}
-        onPress={() => navigation.navigate('MainTabs')}
+        onPress={handleLogin}
       >
         <Text style={styles.loginText}>Login</Text>
       </TouchableOpacity>
@@ -57,7 +173,7 @@ export default function LoginScreen({ navigation }) {
       {/* Bottom Text */}
       <View style={styles.bottomContainer}>
         <Text style={styles.bottomText}>Don’t have an account? </Text>
-        <TouchableOpacity onPress={() => navigation.navigate('Challenge')}>
+        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
           <Text style={styles.signUpText}>Sign Up Now</Text>
         </TouchableOpacity>
       </View>
@@ -74,13 +190,13 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   logoContainer: {
-  position: 'absolute',
-  top: 100, // adjust as needed
-  alignItems: 'center',
-  width: '100%',
+    position: 'absolute',
+    top: 100, // adjust as needed
+    alignItems: 'center',
+    width: '100%',
   },
   logo: {
-    width: 250, // smaller so it doesn't dominate
+    width: 250,
     height: 250,
   },
   logoText: {
@@ -103,10 +219,14 @@ const styles = StyleSheet.create({
     color: '#000',
     marginVertical: 8,
   },
-  forgotText: {
-    alignSelf: 'flex-end',
-    color: '#A9ECA2',
+  forgotContainer: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginTop: 4,
     marginBottom: 20,
+  },
+  forgotText: {
+    color: '#A9ECA2',
   },
   loginButton: {
     width: '100%',

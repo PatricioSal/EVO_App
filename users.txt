@@ -1,0 +1,7 @@
+# User Credentials File
+# Format: email:password (one per line)
+# When new users sign up, check the console logs for the new user entry
+# and manually add it to this file
+# 
+test@example.com:1234
+
