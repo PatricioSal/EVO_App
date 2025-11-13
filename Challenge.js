@@ -99,7 +99,13 @@ export default function Challenge() {
                 />
                 <View style={styles.challengeScreenBox}>
                     <Text style={styles.challengeTitle}>Your Challenge:</Text>
-                    
+                    {/* Back Button */}
+                    <TouchableOpacity 
+                                style={styles.backButton}
+                                onPress={() => setShowChallengeScreen(false)}
+                                >
+                            <Text style={styles.backArrow}>←</Text>
+                        </TouchableOpacity>
                     <ScrollView 
                         style={styles.challengeScrollView}
                         contentContainerStyle={styles.challengeScrollContent}
@@ -150,6 +156,13 @@ export default function Challenge() {
                 style={styles.evoHeader}
             />
             <View style={styles.bigbox}>
+                {/* Back Button */}
+                <TouchableOpacity 
+                    style={styles.backButton}
+                    onPress={() => navigation.goBack()}
+                    >
+                        <Text style={styles.backArrow}>←</Text>
+                </TouchableOpacity>
                 {/* Difficulty Section */}
                 <Text style={styles.boxText}>Choose Difficulty of</Text>
                 <Text style={styles.boxText}>Your Challenge</Text>
@@ -459,6 +472,19 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 14,
         marginTop: 5,
+    },
+    backButton: {
+        position: 'absolute',
+        top: 0,
+        left: 20,
+        zIndex: 1000,
+        backgroundColor: '#1A661E',
+    },
+    backArrow:{
+        color: '#fff',
+        backgroundColor: '#1A661E',
+        fontSize: 40,
+        fontWeight: 'bold',
     },
     // Challenge Screen Styles
     challengeScreenBox: {
