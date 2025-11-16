@@ -178,6 +178,71 @@ const server = http.createServer((req, res) => {
         res.end(JSON.stringify({ error: 'Failed to send code' }));
       }
     });
+  } else if (req.method === 'POST' && req.url === '/update-password') {
+    let body = '';
+    
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+
+    req.on('end', () => {
+      try {
+        const { email, newPassword } = JSON.parse(body);
+        
+        if (!email || !newPassword) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Email and new password required' }));
+          return;
+        }
+
+        // Read existing file
+        let fileContent = '';
+        if (fs.existsSync(USERS_FILE)) {
+          fileContent = fs.readFileSync(USERS_FILE, 'utf8');
+        } else {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Users file not found' }));
+          return;
+        }
+
+        // Update password for the user
+        const lines = fileContent.split('\n');
+        let userFound = false;
+        const updatedLines = lines.map(line => {
+          const trimmed = line.trim();
+          // Skip empty lines and comments
+          if (!trimmed || trimmed.startsWith('#')) {
+            return line;
+          }
+          
+          const [storedEmail, storedPassword] = trimmed.split(':');
+          if (storedEmail && storedEmail.trim().toLowerCase() === email.toLowerCase()) {
+            userFound = true;
+            return `${storedEmail.trim()}:${newPassword.trim()}`;
+          }
+          return line;
+        });
+
+        if (!userFound) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'User not found' }));
+          return;
+        }
+
+        // Write updated content back to file
+        const updatedContent = updatedLines.join('\n');
+        fs.writeFileSync(USERS_FILE, updatedContent, 'utf8');
+
+        console.log(`✓ Password updated for: ${email}`);
+        
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: true, message: 'Password updated successfully' }));
+      } catch (error) {
+        console.error('Error updating password:', error);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Failed to update password' }));
+      }
+    });
   } else {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Not found' }));

@@ -1,22 +1,23 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as FileSystem from 'expo-file-system/legacy';
 
 export default function ChangePasswordScreen({ navigation }) {
   const [email, setEmail] = useState('');
-  const [securityAnswer, setSecurityAnswer] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
-  const handleVerify = () => {
-    if (email === 'test@example.com' && securityAnswer.toLowerCase() === 'drums') {
-      Alert.alert('Verification Successful', 'You may now set a new password.');
-    } else {
-      Alert.alert('Verification Failed', 'Invalid email or answer.');
+  const handleChangePassword = async () => {
+    // Validate inputs
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email.');
+      return;
     }
-  };
-
-  const handleChangePassword = () => {
+    if (!newPassword.trim()) {
+      Alert.alert('Error', 'Please enter a new password.');
+      return;
+    }
     if (newPassword !== confirmPassword) {
       Alert.alert('Error', 'Passwords do not match.');
       return;
@@ -25,8 +26,69 @@ export default function ChangePasswordScreen({ navigation }) {
       Alert.alert('Error', 'Password should be at least 4 characters.');
       return;
     }
-    Alert.alert('Success', 'Your password has been changed successfully.');
-    navigation.navigate('Login');
+
+    try {
+      // Read the users.txt file from document directory (runtime storage)
+      const fileUri = `${FileSystem.documentDirectory}users.txt`;
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      
+      if (!fileInfo.exists) {
+        Alert.alert('Error', 'No users found. Please sign up first.');
+        return;
+      }
+
+      let fileContent = await FileSystem.readAsStringAsync(fileUri);
+      const lines = fileContent.split('\n');
+      
+      // Find and update the user's password
+      let userFound = false;
+      const updatedLines = lines.map(line => {
+        const trimmed = line.trim();
+        // Skip empty lines and comments
+        if (!trimmed || trimmed.startsWith('#')) {
+          return line;
+        }
+        
+        const [storedEmail, storedPassword] = trimmed.split(':');
+        if (storedEmail && storedEmail.trim().toLowerCase() === email.trim().toLowerCase()) {
+          userFound = true;
+          return `${storedEmail.trim()}:${newPassword.trim()}`;
+        }
+        return line;
+      });
+
+      if (!userFound) {
+        Alert.alert('Error', 'Email not found. Please check your email address.');
+        return;
+      }
+
+      // Write updated content back to file
+      const updatedContent = updatedLines.join('\n');
+      await FileSystem.writeAsStringAsync(fileUri, updatedContent);
+
+      // Also try to update the project file via sync server (optional)
+      try {
+        await fetch('http://localhost:3001/update-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email.trim(),
+            newPassword: newPassword.trim(),
+          }),
+        });
+      } catch (error) {
+        // Server not running is okay, we already updated runtime storage
+        console.log('Sync server not available, password updated in runtime storage only');
+      }
+
+      Alert.alert('Success', 'Your password has been changed successfully.');
+      navigation.navigate('Login');
+    } catch (error) {
+      console.error('Change password error:', error);
+      Alert.alert('Error', 'Failed to change password. Please try again.');
+    }
   };
 
   return (
@@ -37,31 +99,22 @@ export default function ChangePasswordScreen({ navigation }) {
       style={styles.container}
     >
       <Text style={styles.title}>Change Password</Text>
+      <Text style={styles.subtitle}>Enter your email and new password</Text>
 
       <TextInput
         style={styles.input}
         placeholder="Enter your email"
-        placeholderTextColor="#000"
+        placeholderTextColor="#A9ECA2"
         value={email}
         onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
       />
-
-      <TextInput
-        style={styles.input}
-        placeholder="What’s your favorite instrument?"
-        placeholderTextColor="#000"
-        value={securityAnswer}
-        onChangeText={setSecurityAnswer}
-      />
-
-      <TouchableOpacity style={styles.verifyButton} onPress={handleVerify}>
-        <Text style={styles.buttonText}>Verify Identity</Text>
-      </TouchableOpacity>
 
       <TextInput
         style={styles.input}
         placeholder="New password"
-        placeholderTextColor="#000"
+        placeholderTextColor="#A9ECA2"
         secureTextEntry
         value={newPassword}
         onChangeText={setNewPassword}
@@ -70,14 +123,14 @@ export default function ChangePasswordScreen({ navigation }) {
       <TextInput
         style={styles.input}
         placeholder="Confirm new password"
-        placeholderTextColor="#000"
+        placeholderTextColor="#A9ECA2"
         secureTextEntry
         value={confirmPassword}
         onChangeText={setConfirmPassword}
       />
 
       <TouchableOpacity style={styles.saveButton} onPress={handleChangePassword}>
-        <Text style={styles.buttonText}>Save New Password</Text>
+        <Text style={styles.buttonText}>Change Password</Text>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
@@ -97,7 +150,14 @@ const styles = StyleSheet.create({
   title: {
     color: '#C8E6C9',
     fontSize: 26,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  subtitle: {
+    color: '#A9ECA2',
+    fontSize: 14,
     marginBottom: 25,
+    textAlign: 'center',
   },
   input: {
     width: '100%',
@@ -106,16 +166,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 10,
     padding: 12,
-    color: '#000',
+    color: '#fff',
     marginBottom: 12,
-  },
-  verifyButton: {
-    backgroundColor: '#3E662F',
-    borderRadius: 10,
-    paddingVertical: 12,
-    width: '100%',
-    alignItems: 'center',
-    marginBottom: 20,
   },
   saveButton: {
     backgroundColor: '#3E662F',
